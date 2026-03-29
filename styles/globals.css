@@ -1,0 +1,206 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 4%;
+    --foreground: 210 40% 98%;
+    --primary: 199 100% 50%;
+    --primary-foreground: 222 47% 4%;
+    --accent: 270 70% 55%;
+    --accent-foreground: 210 40% 98%;
+    --muted: 217 33% 12%;
+    --muted-foreground: 215 20% 55%;
+    --border: 217 33% 15%;
+    --card: 222 47% 6%;
+
+    /* Dark mode glass */
+    --glass-bg: rgba(255, 255, 255, 0.04);
+    --glass-border: rgba(255, 255, 255, 0.10);
+    --glass-hover: rgba(255, 255, 255, 0.08);
+
+    /* Dark mode surface overlays */
+    --surface-1: rgba(255, 255, 255, 0.04);
+    --surface-2: rgba(255, 255, 255, 0.06);
+    --surface-3: rgba(255, 255, 255, 0.08);
+
+    /* Neon colors — full brightness in dark */
+    --neon-blue: #00d4ff;
+    --neon-green: #00ff88;
+    --neon-purple: #7c3aed;
+    --neon-pink: #ff0080;
+  }
+
+  .light {
+    --background: 210 20% 96%;
+    --foreground: 222 47% 10%;
+    --primary: 199 100% 35%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 270 70% 45%;
+    --accent-foreground: 0 0% 100%;
+    --muted: 210 30% 88%;
+    --muted-foreground: 215 20% 38%;
+    --border: 214 32% 80%;
+    --card: 0 0% 100%;
+
+    /* Light mode glass — dark tinted */
+    --glass-bg: rgba(0, 0, 0, 0.04);
+    --glass-border: rgba(0, 0, 0, 0.10);
+    --glass-hover: rgba(0, 0, 0, 0.06);
+
+    /* Light mode surface overlays */
+    --surface-1: rgba(0, 0, 0, 0.03);
+    --surface-2: rgba(0, 0, 0, 0.05);
+    --surface-3: rgba(0, 0, 0, 0.07);
+
+    /* Neon colors — darker/richer in light for contrast */
+    --neon-blue: #0099cc;
+    --neon-green: #00aa55;
+    --neon-purple: #6d28d9;
+    --neon-pink: #cc0066;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  ::selection {
+    background: rgba(0, 212, 255, 0.25);
+    color: inherit;
+  }
+
+  .light ::selection {
+    background: rgba(0, 153, 204, 0.2);
+    color: inherit;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 212, 255, 0.4);
+    border-radius: 9999px;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-neon-blue via-neon-purple to-neon-pink bg-clip-text text-transparent;
+  }
+
+  .glow-blue {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+  }
+
+  .light .glow-blue {
+    box-shadow: 0 0 20px rgba(0, 153, 204, 0.25);
+  }
+
+  .glow-purple {
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+  }
+
+  /* Glass — uses CSS vars so it adapts to light/dark automatically */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+  }
+
+  .light .glass {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Light mode — fix hardcoded white/dark surface values */
+  .light .bg-white\/\[0\.04\]  { background-color: rgba(0,0,0,0.04) !important; }
+  .light .bg-white\/\[0\.03\]  { background-color: rgba(0,0,0,0.03) !important; }
+  .light .bg-white\/\[0\.02\]  { background-color: rgba(0,0,0,0.02) !important; }
+  .light .bg-white\/5          { background-color: rgba(0,0,0,0.05) !important; }
+  .light .bg-white\/10         { background-color: rgba(0,0,0,0.08) !important; }
+
+  .light .border-white\/10     { border-color: rgba(0,0,0,0.10) !important; }
+  .light .border-white\/\[0\.06\] { border-color: rgba(0,0,0,0.06) !important; }
+  .light .border-white\/\[0\.07\] { border-color: rgba(0,0,0,0.07) !important; }
+  .light .border-white\/\[0\.08\] { border-color: rgba(0,0,0,0.08) !important; }
+  .light .border-white\/20     { border-color: rgba(0,0,0,0.15) !important; }
+
+  .light .ring-white\/\[0\.08\] { --tw-ring-color: rgba(0,0,0,0.08) !important; }
+
+  /* Muted foreground opacity variants */
+  .light .text-white\/75       { color: rgba(0,0,0,0.75) !important; }
+  .light .text-white\/65       { color: rgba(0,0,0,0.65) !important; }
+
+  /* Dot grid background — invert for light */
+  .light [style*="rgba(0,212,255,0.3) 1px"] {
+    opacity: 0.06 !important;
+  }
+
+  /* Ambient orbs — reduce opacity in light */
+  .light .bg-neon-blue.blur-\[120px\],
+  .light .bg-neon-blue.blur-\[110px\],
+  .light .bg-neon-purple.blur-\[100px\],
+  .light .bg-neon-purple.blur-\[90px\] {
+    opacity: 0.04 !important;
+  }
+
+  /* Scan line — lighter in light mode */
+  .light .via-neon-blue\/25 {
+    --tw-gradient-via-position: ;
+    --tw-gradient-stops: var(--tw-gradient-from), rgba(0,153,204,0.15) var(--tw-gradient-via-position), var(--tw-gradient-to);
+  }
+
+  /* Form inputs in light mode */
+  .light input,
+  .light textarea {
+    color-scheme: light;
+  }
+
+  /* Hide default cursor when custom cursor is active (desktop only) */
+  @media (pointer: fine) {
+    html, * {
+      cursor: none !important;
+    }
+  }
+
+  .shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  .light .shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.04) 50%, transparent 100%);
+    background-size: 200% 100%;
+  }
+
+  /* Scrollbar hide utility */
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Line clamp */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
