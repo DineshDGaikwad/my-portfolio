@@ -11,28 +11,20 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing lat/lng' }, { status: 400 })
   }
 
-  const apiKey = process.env.OPENCAGE_API_KEY
-  if (!apiKey) {
-    return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
-  }
-
   try {
+    // BigDataCloud — free, no API key needed, 10k req/day
     const res = await fetch(
-      `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lng}&key=${apiKey}&limit=1&no_annotations=1`,
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`,
       { cache: 'no-store' }
     )
+    if (!res.ok) throw new Error(`BigDataCloud responded ${res.status}`)
     const data = await res.json()
-    const result = data.results?.[0]?.components
-
-    if (!result) {
-      return NextResponse.json({ error: 'No results' }, { status: 404 })
-    }
 
     return NextResponse.json({
-      city: result.city || result.town || result.village || result.county || '',
-      state: result.state || '',
-      country: result.country || '',
-      countryCode: result.country_code?.toUpperCase() || '',
+      city: data.city || data.locality || data.principalSubdivision || '',
+      state: data.principalSubdivision || '',
+      country: data.countryName || '',
+      countryCode: data.countryCode || '',
     })
   } catch (err) {
     console.error('Geocoding error:', err)

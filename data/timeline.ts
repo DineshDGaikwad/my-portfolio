@@ -43,7 +43,7 @@ export const timelineEntries: TimelineEntry[] = [
   {
     id: 'school-2',
     title: 'Secondary Education (7th – 10th)',
-    organization: 'Alma Malik International School',
+    organization: 'Atma Malik International School',
     location: 'Kokamthan, Kopargaon',
     period: '2014 – 2019',
     startYear: 2014,

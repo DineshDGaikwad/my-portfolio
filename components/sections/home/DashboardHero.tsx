@@ -756,40 +756,42 @@ function LocationCard() {
 // ─── Visitor hook ───────────────────────────────────────────────────────────────
 function useVisitors() {
   const [count, setCount] = useState<number | null>(null)
-  const [isNew, setIsNew] = useState(false)
 
   useEffect(() => {
-    // Increment on first mount (new visit), then poll GET every 30s
-    const increment = async () => {
+    // Register visit once per browser session
+    const visited = sessionStorage.getItem('portfolio:visited')
+    const register = async () => {
       try {
-        const res = await fetch('/api/visitors', { method: 'POST' })
+        const res = await fetch('/api/visitors', { method: visited ? 'GET' : 'POST' })
         const data = await res.json()
-        setCount(data.count)
-        setIsNew(true)
-        setTimeout(() => setIsNew(false), 2000)
+        if (data.count != null) setCount(data.count)
+        if (!visited) sessionStorage.setItem('portfolio:visited', '1')
       } catch {
-        setCount(null)
+        // Fallback: try GET
+        try {
+          const res = await fetch('/api/visitors')
+          const data = await res.json()
+          if (data.count != null) setCount(data.count)
+        } catch {}
       }
     }
 
-    const poll = async () => {
+    register()
+    const id = setInterval(async () => {
       try {
         const res = await fetch('/api/visitors')
         const data = await res.json()
-        setCount(data.count)
+        if (data.count != null) setCount(data.count)
       } catch {}
-    }
-
-    increment()
-    const id = setInterval(poll, 30_000)
+    }, 30_000)
     return () => clearInterval(id)
   }, [])
 
-  return { count, isNew }
+  return { count }
 }
 
 function VisitorCard() {
-  const { count, isNew } = useVisitors()
+  const { count } = useVisitors()
 
   return (
     <GlassCard delay={0.5}>
@@ -801,10 +803,7 @@ function VisitorCard() {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className={cn(
-              'text-3xl font-bold font-mono leading-none transition-colors duration-300',
-              isNew ? 'text-neon-green' : 'text-foreground'
-            )}
+            className="text-3xl font-bold font-mono leading-none text-foreground"
           >
             {count === null ? (
               <span className="text-muted-foreground/40 animate-pulse text-2xl">—</span>

@@ -37,10 +37,14 @@ export async function POST(req: NextRequest) {
   try {
     const ip        = getIP(req)
     const userAgent = req.headers.get('user-agent') || ''
-    const geo       = await getGeoFromIP(ip)
 
     await connectDB()
-    await Visitor.create({ ip, userAgent, ...geo })
+
+    // Save immediately without waiting for geo — geo enriches async
+    const doc = await Visitor.create({ ip, userAgent })
+    getGeoFromIP(ip).then((geo) => {
+      if (Object.keys(geo).length) Visitor.updateOne({ _id: doc._id }, { $set: geo }).catch(() => {})
+    })
 
     const count = await Visitor.countDocuments()
     return NextResponse.json({ count })
