@@ -12,7 +12,9 @@ export async function parseResume(buffer: Buffer, fileName: string): Promise<Par
   let text = ''
 
   if (ext === 'pdf') {
-    const pdfParse = require('pdf-parse')
+    // Import the internal render module directly to avoid pdf-parse's
+    // test file lookup bug (ENOENT: ./test/data/05-versions-space.pdf)
+    const pdfParse = require('pdf-parse/lib/pdf-parse.js')
     const result = await pdfParse(buffer)
     text = result.text
   } else {
