@@ -95,8 +95,8 @@ Return ONLY a valid JSON object (no markdown, no explanation, no code fences):
   "overallVerdict": "<Strong|Good|Needs Work|Weak>",
   "skillGap": {
     "present": ["<skills actually found in resume — be accurate>"],
-    "missing": ["<required skills genuinely not found>"],
-    "recommended": ["<high-value skills to add for this role>"]
+    "missing": ["<required skills for the role that are genuinely not mentioned anywhere in the resume>"],
+    "recommended": ["<skills that are DIRECTLY adjacent to what they already have — e.g. if they know React suggest Next.js, if they know SQL suggest query optimization, if they know Docker suggest Kubernetes. Only suggest things a logical next step from their existing stack. Max 4 items.>"]
   },
   "contentIssues": [
     {

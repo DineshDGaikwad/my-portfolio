@@ -151,7 +151,7 @@ export function SuggestionsList({ analysis }: { analysis: AnalysisResult }) {
           )}
           {analysis.skillGap.recommended.length > 0 && (
             <div>
-              <p className="text-[10px] font-mono text-yellow-400 uppercase tracking-widest mb-2">+ Recommended to Add</p>
+              <p className="text-[10px] font-mono text-yellow-400 uppercase tracking-widest mb-2">→ Natural Next Steps (based on your stack)</p>
               <div className="flex flex-wrap gap-1.5">
                 {analysis.skillGap.recommended.map((s) => (
                   <span key={s} className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-yellow-400/10 border border-yellow-400/20 text-yellow-400">{s}</span>
