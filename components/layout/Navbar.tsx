@@ -7,7 +7,7 @@ import { useAppStore } from '@/store/useAppStore'
 import { navItems, siteConfig } from '@/config/site'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
-import { Sun, Moon, Menu, X, Terminal, Search, User, Briefcase, Zap, Mail } from '@/components/ui/Icons'
+import { Sun, Moon, Menu, X, Terminal, Search, User, Briefcase, Zap, Mail, Sparkles } from '@/components/ui/Icons'
 
 // Map each nav item to an icon
 const navIcons: Record<string, React.ReactNode> = {
@@ -15,6 +15,7 @@ const navIcons: Record<string, React.ReactNode> = {
   projects: <Briefcase size={18} />,
   skills:   <Zap size={18} />,
   contact:  <Mail size={18} />,
+  resume:   <Sparkles size={18} />,
 }
 
 export function Navbar() {
@@ -26,7 +27,10 @@ export function Navbar() {
   const isHome = pathname === '/'
 
   // On sub-pages use full path so anchor links actually navigate home first
-  const navHref = (href: string) => isHome ? href : `/${href}`
+  const navHref = (href: string) => {
+    if (href.startsWith('/')) return href  // page routes like /resume
+    return isHome ? href : `/${href}`
+  }
   const logoHref = isHome ? '#hero' : '/'
 
   useEffect(() => {
@@ -91,7 +95,10 @@ export function Navbar() {
             {/* Col 2: Nav links */}
             <ul className="flex items-center justify-center gap-1" role="list">
               {navItems.map((item) => {
-                const isActive = activeSection === item.href.replace('#', '')
+                const key = item.href.replace('#', '').replace('/', '')
+                const isActive = item.href.startsWith('/')
+                  ? pathname === item.href
+                  : activeSection === item.href.replace('#', '')
                 return (
                   <li key={item.href}>
                     <motion.a
@@ -227,8 +234,10 @@ export function Navbar() {
           style={glassStyle}
         >
           {navItems.map((item) => {
-            const key = item.href.replace('#', '')
-            const isActive = activeSection === key
+            const key = item.href.replace('#', '').replace('/', '')
+            const isActive = item.href.startsWith('/')
+              ? pathname === item.href
+              : activeSection === key
             return (
               <motion.a
                 key={item.href}

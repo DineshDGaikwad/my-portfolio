@@ -28,4 +28,5 @@ export const navItems = [
   { label: 'Projects', href: '#projects' },
   { label: 'Skills', href: '#skills' },
   { label: 'Contact', href: '#contact' },
+  { label: 'Resume AI', href: '/resume' },
 ]

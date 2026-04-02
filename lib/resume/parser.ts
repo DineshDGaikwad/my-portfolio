@@ -1,0 +1,33 @@
+import mammoth from 'mammoth'
+
+export interface ParsedResume {
+  text: string
+  wordCount: number
+  fileName: string
+  fileType: 'pdf' | 'docx'
+}
+
+export async function parseResume(buffer: Buffer, fileName: string): Promise<ParsedResume> {
+  const ext = fileName.toLowerCase().endsWith('.pdf') ? 'pdf' : 'docx'
+  let text = ''
+
+  if (ext === 'pdf') {
+    // pdf-parse has inconsistent ESM/CJS exports — use require for reliability
+    const pdfParse = require('pdf-parse')
+    const result = await pdfParse(buffer)
+    text = result.text
+  } else {
+    const result = await mammoth.extractRawText({ buffer })
+    text = result.value
+  }
+
+  // Sanitize — remove null bytes, excessive whitespace
+  text = text.replace(/\0/g, '').replace(/\n{3,}/g, '\n\n').trim()
+
+  return {
+    text,
+    wordCount: text.split(/\s+/).filter(Boolean).length,
+    fileName,
+    fileType: ext,
+  }
+}
