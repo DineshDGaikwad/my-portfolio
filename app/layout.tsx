@@ -52,6 +52,9 @@ export const metadata: Metadata = {
   },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
   alternates: { canonical: siteConfig.url },
+  verification: {
+    google: 'PXxBRZsdPNVLxeHXH8ZGDmHU5gzNku_rgsEVhCG7Y_c',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
