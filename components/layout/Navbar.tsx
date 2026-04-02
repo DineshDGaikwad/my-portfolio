@@ -2,47 +2,42 @@
 
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useAppStore } from '@/store/useAppStore'
 import { navItems, siteConfig } from '@/config/site'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/Button'
-import { Sun, Moon, Menu, X, Terminal, Search, User, Briefcase, Zap, Mail, Sparkles } from '@/components/ui/Icons'
+import { Sun, Moon, Terminal, Search, User, Briefcase, Zap, Mail, Sparkles } from '@/components/ui/Icons'
 
-// Map each nav item to an icon
-const navIcons: Record<string, React.ReactNode> = {
-  about:    <User size={18} />,
-  projects: <Briefcase size={18} />,
-  skills:   <Zap size={18} />,
-  contact:  <Mail size={18} />,
-  resume:   <Sparkles size={18} />,
+// Icons for both desktop and mobile
+const navIcons: Record<string, React.ElementType> = {
+  about:    User,
+  projects: Briefcase,
+  skills:   Zap,
+  contact:  Mail,
+  resume:   Sparkles,
 }
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
   const { theme, toggleTheme, activeSection, devMode, toggleDevMode } = useAppStore()
 
   const pathname = usePathname()
   const isHome = pathname === '/'
 
-  // On sub-pages use full path so anchor links actually navigate home first
   const navHref = (href: string) => {
-    if (href.startsWith('/')) return href  // page routes like /resume
+    if (href.startsWith('/')) return href
     return isHome ? href : `/${href}`
   }
   const logoHref = isHome ? '#hero' : '/'
+
+  // Determine active state — page routes use pathname, hash anchors use activeSection
+  const isActive = (href: string) =>
+    href.startsWith('/') ? pathname === href : activeSection === href.replace('#', '')
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  useEffect(() => {
-    const onResize = () => { if (window.innerWidth >= 768) setMobileOpen(false) }
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
   }, [])
 
   const glassStyle = {
@@ -63,23 +58,20 @@ export function Navbar() {
       >
         <motion.div
           animate={{
-            backdropFilter: scrolled ? 'blur(40px) saturate(180%)' : 'blur(28px) saturate(150%)',
             boxShadow: scrolled
-              ? '0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(255,255,255,0.04)'
-              : '0 4px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(255,255,255,0.03)',
+              ? '0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)'
+              : '0 4px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1)',
           }}
           transition={{ duration: 0.4, ease: 'easeOut' }}
-          style={{ WebkitBackdropFilter: scrolled ? 'blur(40px) saturate(180%)' : 'blur(28px) saturate(150%)' }}
+          style={glassStyle}
           className={cn(
             'pointer-events-auto w-full max-w-4xl rounded-full ring-1 ring-white/[0.08] transition-colors duration-300',
             scrolled ? 'bg-white/[0.08]' : 'bg-white/[0.05]'
           )}
         >
-          <nav
-            className="px-5 md:px-6 py-2.5 grid grid-cols-3 items-center"
-            aria-label="Main navigation"
-          >
-            {/* Col 1: Logo */}
+          <nav className="px-5 md:px-6 py-2.5 grid grid-cols-3 items-center" aria-label="Main navigation">
+
+            {/* Logo */}
             <div className="flex items-center">
               <motion.a
                 href={logoHref}
@@ -92,13 +84,12 @@ export function Navbar() {
               </motion.a>
             </div>
 
-            {/* Col 2: Nav links */}
-            <ul className="flex items-center justify-center gap-1" role="list">
+            {/* Nav links with icons */}
+            <ul className="flex items-center justify-center gap-0.5" role="list">
               {navItems.map((item) => {
                 const key = item.href.replace('#', '').replace('/', '')
-                const isActive = item.href.startsWith('/')
-                  ? pathname === item.href
-                  : activeSection === item.href.replace('#', '')
+                const active = isActive(item.href)
+                const Icon = navIcons[key]
                 return (
                   <li key={item.href}>
                     <motion.a
@@ -106,16 +97,21 @@ export function Navbar() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       className={cn(
-                        'relative text-sm font-medium px-3 py-1.5 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-blue block',
-                        isActive ? 'text-neon-blue' : 'text-muted-foreground hover:text-foreground'
+                        'relative flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-blue',
+                        active ? 'text-neon-blue' : 'text-muted-foreground hover:text-foreground'
                       )}
                     >
-                      {isActive && (
+                      {active && (
                         <motion.span
-                          layoutId="nav-pill"
+                          layoutId="desktop-nav-pill"
                           className="absolute inset-0 rounded-full bg-neon-blue/10 border border-neon-blue/20"
                           transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                         />
+                      )}
+                      {Icon && (
+                        <span className="relative z-10 opacity-70">
+                          <Icon size={12} aria-hidden="true" />
+                        </span>
                       )}
                       <span className="relative z-10">{item.label}</span>
                     </motion.a>
@@ -124,14 +120,12 @@ export function Navbar() {
               })}
             </ul>
 
-            {/* Col 3: Actions */}
+            {/* Actions */}
             <div className="flex items-center gap-2 justify-end">
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                onClick={() => {
-                  window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))
-                }}
+                onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))}
                 className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/10 text-xs text-muted-foreground hover:border-white/20 hover:text-foreground transition-all font-mono"
                 aria-label="Open command palette"
               >
@@ -148,9 +142,7 @@ export function Navbar() {
                 aria-pressed={devMode}
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-blue',
-                  devMode
-                    ? 'border-neon-green text-neon-green bg-neon-green/10'
-                    : 'border-white/10 text-muted-foreground hover:border-white/20'
+                  devMode ? 'border-neon-green text-neon-green bg-neon-green/10' : 'border-white/10 text-muted-foreground hover:border-white/20'
                 )}
               >
                 <Terminal size={11} className={cn(devMode && 'animate-pulse')} aria-hidden="true" />
@@ -166,15 +158,12 @@ export function Navbar() {
               >
                 {theme === 'dark' ? <Sun size={16} aria-hidden="true" /> : <Moon size={16} aria-hidden="true" />}
               </motion.button>
-
-              {/* <Button variant="outline" size="sm" href={`mailto:${siteConfig.author.email}`}>Hire Me</Button> */}
             </div>
           </nav>
         </motion.div>
       </motion.header>
 
-      {/* ── MOBILE Navbar (< md) ── */}
-      {/* Top bar: Logo + Search icon + Theme */}
+      {/* ── MOBILE Top bar ── */}
       <motion.header
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -186,7 +175,6 @@ export function Navbar() {
           className="pointer-events-auto w-full rounded-full ring-1 ring-white/[0.08] px-4 py-2 flex items-center justify-between"
           style={glassStyle}
         >
-          {/* Logo */}
           <motion.a
             href={logoHref}
             whileTap={{ scale: 0.95 }}
@@ -196,19 +184,15 @@ export function Navbar() {
             DG<span className="text-foreground">.</span>
           </motion.a>
 
-          {/* Right: search icon + theme */}
           <div className="flex items-center gap-1">
             <motion.button
               whileTap={{ scale: 0.9 }}
-              onClick={() => {
-                window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))
-              }}
+              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))}
               className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all"
               aria-label="Open command palette"
             >
               <Search size={15} aria-hidden="true" />
             </motion.button>
-
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={toggleTheme}
@@ -221,7 +205,7 @@ export function Navbar() {
         </div>
       </motion.header>
 
-      {/* Bottom dock nav */}
+      {/* ── MOBILE Bottom dock ── */}
       <motion.nav
         initial={{ y: 80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -230,14 +214,13 @@ export function Navbar() {
         aria-label="Mobile navigation"
       >
         <div
-          className="pointer-events-auto flex items-center gap-1 px-3 py-2 rounded-full ring-1 ring-white/[0.08]"
+          className="pointer-events-auto flex items-center gap-0.5 px-3 py-2 rounded-full ring-1 ring-white/[0.08]"
           style={glassStyle}
         >
           {navItems.map((item) => {
             const key = item.href.replace('#', '').replace('/', '')
-            const isActive = item.href.startsWith('/')
-              ? pathname === item.href
-              : activeSection === key
+            const active = isActive(item.href)
+            const Icon = navIcons[key]
             return (
               <motion.a
                 key={item.href}
@@ -246,38 +229,25 @@ export function Navbar() {
                 className="relative flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-blue"
                 aria-label={item.label}
               >
-                {/* active bg pill */}
-                {isActive && (
+                {active && (
                   <motion.span
                     layoutId="mobile-dock-pill"
                     className="absolute inset-0 rounded-full bg-neon-blue/10 border border-neon-blue/20"
                     transition={{ type: 'spring', stiffness: 400, damping: 32 }}
                   />
                 )}
-
-                {/* icon */}
-                <span className={cn(
-                  'relative z-10 transition-colors duration-200',
-                  isActive ? 'text-neon-blue' : 'text-muted-foreground'
-                )}>
-                  {navIcons[key]}
+                <span className={cn('relative z-10 transition-colors duration-200', active ? 'text-neon-blue' : 'text-muted-foreground')}>
+                  {Icon && <Icon size={18} aria-hidden="true" />}
                 </span>
-
-                {/* label */}
-                <span className={cn(
-                  'relative z-10 text-[10px] font-medium leading-none transition-colors duration-200',
-                  isActive ? 'text-neon-blue' : 'text-muted-foreground'
-                )}>
+                <span className={cn('relative z-10 text-[10px] font-medium leading-none transition-colors duration-200', active ? 'text-neon-blue' : 'text-muted-foreground')}>
                   {item.label}
                 </span>
               </motion.a>
             )
           })}
 
-          {/* divider */}
           <span className="w-px h-6 bg-white/10 mx-1" aria-hidden="true" />
 
-          {/* Dev mode in dock */}
           <motion.button
             whileTap={{ scale: 0.88 }}
             onClick={toggleDevMode}
