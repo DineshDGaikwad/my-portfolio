@@ -1,3 +1,5 @@
+import Groq from 'groq-sdk'
+
 export interface AnalysisResult {
   atsScore: number
   scoreBreakdown: {
@@ -46,8 +48,8 @@ const ROLE_SKILLS: Record<string, string[]> = {
 }
 
 export async function analyzeResume(resumeText: string, role: string): Promise<AnalysisResult> {
-  const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey) throw new Error('OPENAI_API_KEY not configured')
+  const apiKey = process.env.GROQ_API_KEY
+  if (!apiKey) throw new Error('GROQ_API_KEY not configured')
 
   const roleSkills = ROLE_SKILLS[role] ?? ROLE_SKILLS['SDE']
 
@@ -101,29 +103,16 @@ Rules:
 - Be specific, not generic
 - strengths should have 3-5 items`
 
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.3,
-      max_tokens: 2000,
-    }),
+  const groq = new Groq({ apiKey })
+
+  const completion = await groq.chat.completions.create({
+    model: 'llama-3.3-70b-versatile',
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.3,
+    max_tokens: 2000,
   })
 
-  if (!res.ok) {
-    const err = await res.text()
-    throw new Error(`OpenAI error: ${err}`)
-  }
-
-  const data = await res.json()
-  const content = data.choices?.[0]?.message?.content ?? ''
-
-  // Strip markdown code fences if present
+  const content = completion.choices?.[0]?.message?.content ?? ''
   const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
   const result = JSON.parse(cleaned) as AnalysisResult
   result.role = role

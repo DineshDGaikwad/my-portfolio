@@ -16,7 +16,7 @@ export default function ResumePage() {
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-neon-blue/20 bg-neon-blue/5 text-neon-blue text-xs font-mono mb-4">
             <Sparkles size={11} />
-            Powered by GPT-4o mini
+            Powered by Llama 3.3 · Groq
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-tight">
             <span className="text-foreground">AI </span>
