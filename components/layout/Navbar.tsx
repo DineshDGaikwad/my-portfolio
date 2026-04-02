@@ -69,23 +69,21 @@ export function Navbar() {
             scrolled ? 'bg-white/[0.08]' : 'bg-white/[0.05]'
           )}
         >
-          <nav className="px-5 md:px-6 py-2.5 grid grid-cols-3 items-center" aria-label="Main navigation">
+          <nav className="px-4 py-2.5 flex items-center justify-between gap-2" aria-label="Main navigation">
 
             {/* Logo */}
-            <div className="flex items-center">
-              <motion.a
-                href={logoHref}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.97 }}
-                className="font-mono text-neon-blue font-bold text-lg tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-blue rounded-full"
-                aria-label="Dinesh Gaikwad — home"
-              >
-                DG<span className="text-foreground">.</span>
-              </motion.a>
-            </div>
+            <motion.a
+              href={logoHref}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.97 }}
+              className="font-mono text-neon-blue font-bold text-lg tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-blue rounded-full shrink-0"
+              aria-label="Dinesh Gaikwad — home"
+            >
+              DG<span className="text-foreground">.</span>
+            </motion.a>
 
-            {/* Nav links with icons */}
-            <ul className="flex items-center justify-center gap-0.5" role="list">
+            {/* Nav links with icons — centered */}
+            <ul className="flex items-center gap-0.5 flex-1 justify-center" role="list">
               {navItems.map((item) => {
                 const key = item.href.replace('#', '').replace('/', '')
                 const active = isActive(item.href)
@@ -97,7 +95,7 @@ export function Navbar() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       className={cn(
-                        'relative flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-blue',
+                        'relative flex items-center gap-1 text-sm font-medium px-2.5 py-1.5 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-blue whitespace-nowrap',
                         active ? 'text-neon-blue' : 'text-muted-foreground hover:text-foreground'
                       )}
                     >
@@ -110,7 +108,7 @@ export function Navbar() {
                       )}
                       {Icon && (
                         <span className="relative z-10 opacity-70">
-                          <Icon size={12} aria-hidden="true" />
+                          <Icon size={11} aria-hidden="true" />
                         </span>
                       )}
                       <span className="relative z-10">{item.label}</span>
@@ -120,18 +118,16 @@ export function Navbar() {
               })}
             </ul>
 
-            {/* Actions */}
-            <div className="flex items-center gap-2 justify-end">
+            {/* Actions — shrink-0 so they never get squeezed */}
+            <div className="flex items-center gap-1.5 shrink-0">
               <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))}
-                className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/10 text-xs text-muted-foreground hover:border-white/20 hover:text-foreground transition-all font-mono"
+                className="p-2 rounded-full border border-white/10 text-muted-foreground hover:border-white/20 hover:text-foreground transition-all"
                 aria-label="Open command palette"
               >
-                <Search size={11} aria-hidden="true" />
-                Search
-                <kbd className="ml-1 px-1 py-0.5 rounded-full bg-white/10 text-2xs">⌘K</kbd>
+                <Search size={13} aria-hidden="true" />
               </motion.button>
 
               <motion.button
