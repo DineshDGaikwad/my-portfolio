@@ -2,12 +2,17 @@ import type { MetadataRoute } from 'next'
 
 const BASE_URL = 'https://dineshgaikwad.vercel.app'
 
+// Add real page routes here as they are created (e.g. /about, /projects, /contact)
+const routes: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]['changeFrequency'] }[] = [
+  { path: '',        priority: 1,   changeFrequency: 'monthly' },
+  { path: '/resume', priority: 0.7, changeFrequency: 'monthly' },
+]
+
 export default function sitemap(): MetadataRoute.Sitemap {
-  return [
-    { url: BASE_URL,           lastModified: new Date(), changeFrequency: 'monthly', priority: 1 },
-    { url: `${BASE_URL}/#about`,    lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${BASE_URL}/#projects`, lastModified: new Date(), changeFrequency: 'weekly',  priority: 0.8 },
-    { url: `${BASE_URL}/#contact`,  lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${BASE_URL}/resume`,    lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-  ]
+  return routes.map(({ path, priority, changeFrequency }) => ({
+    url: `${BASE_URL}${path}`,
+    lastModified: new Date(),
+    changeFrequency,
+    priority,
+  }))
 }
