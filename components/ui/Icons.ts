@@ -49,6 +49,7 @@ export {
   Sparkles,
   Smile,
   Table2,
+  FileText,
 } from 'lucide-react'
 
 // Social Icons — react-icons/fi (lucide doesn't include brand icons)

@@ -11,6 +11,7 @@
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "@prisma/client": "^5.17.0",
+    "@react-pdf/renderer": "^4.3.2",
     "@types/pdf-parse": "^1.1.5",
     "@upstash/redis": "^1.37.0",
     "clsx": "^2.1.1",

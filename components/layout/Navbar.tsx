@@ -85,7 +85,7 @@ export function Navbar() {
             {/* Nav links with icons — centered */}
             <ul className="flex items-center gap-0.5 flex-1 justify-center" role="list">
               {navItems.map((item) => {
-                const key = item.href.replace('#', '').replace('/', '')
+                const key = item.href.replace('#', '').replace(/^\//,'').replace(/\//g, '-')
                 const active = isActive(item.href)
                 const Icon = navIcons[key]
                 return (
@@ -214,7 +214,7 @@ export function Navbar() {
           style={glassStyle}
         >
           {navItems.map((item) => {
-            const key = item.href.replace('#', '').replace('/', '')
+            const key = item.href.replace('#', '').replace(/^\//, '').replace(/\//g, '-')
             const active = isActive(item.href)
             const Icon = navIcons[key]
             return (

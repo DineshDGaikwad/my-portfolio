@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Resume too short to analyze. Please upload a complete resume.' }, { status: 400 })
 
     const analysis = await analyzeResume(parsed.text, role)
-    return NextResponse.json({ success: true, analysis, meta: { wordCount: parsed.wordCount, fileType: parsed.fileType } })
+    return NextResponse.json({ success: true, analysis, originalText: parsed.text, meta: { wordCount: parsed.wordCount, fileType: parsed.fileType } })
   } catch (err: any) {
     console.error('Resume analyze error:', err)
     if (err.message?.includes('JSON')) {

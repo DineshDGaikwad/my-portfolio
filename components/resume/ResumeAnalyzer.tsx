@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ResumeUpload } from './ResumeUpload'
 import { ScoreCard } from './ScoreCard'
 import { SuggestionsList } from './SuggestionsList'
+import { ResumeGenerator } from './ResumeGenerator'
 import type { AnalysisResult } from '@/lib/resume/analyzer'
-import { AlertCircle, RotateCcw, FileText } from 'lucide-react'
+import { AlertCircle, RotateCcw, FileText, Sparkles } from 'lucide-react'
 
 const LOADING_STEPS = [
   'Parsing resume content...',
@@ -77,6 +78,8 @@ export function ResumeAnalyzer() {
   const [result, setResult] = useState<AnalysisResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [meta, setMeta] = useState<{ wordCount: number; fileType: string } | null>(null)
+  const [originalText, setOriginalText] = useState<string>('')
+  const [showGenerator, setShowGenerator] = useState(false)
 
   const handleAnalyze = async (file: File, role: string) => {
     setLoading(true)
@@ -98,6 +101,7 @@ export function ResumeAnalyzer() {
 
       setResult(data.analysis)
       setMeta(data.meta)
+      setOriginalText(data.originalText ?? '')
     } catch {
       setError('Network error. Please check your connection and try again.')
     } finally {
@@ -105,7 +109,7 @@ export function ResumeAnalyzer() {
     }
   }
 
-  const reset = () => { setResult(null); setError(null); setMeta(null) }
+  const reset = () => { setResult(null); setError(null); setMeta(null); setOriginalText(''); setShowGenerator(false) }
 
   return (
     <AnimatePresence mode="wait">
@@ -113,22 +117,38 @@ export function ResumeAnalyzer() {
         <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
           <LoadingState />
         </motion.div>
+      ) : result && showGenerator ? (
+        <motion.div key="generator" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+          <ResumeGenerator
+            originalText={originalText}
+            analysis={result}
+            onBack={() => setShowGenerator(false)}
+          />
+        </motion.div>
       ) : result ? (
         <motion.div key="result" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <div>
               <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest">Analysis Complete</p>
               <p className="text-sm font-mono text-foreground mt-0.5">
                 {result.role} · {meta?.wordCount} words · {meta?.fileType?.toUpperCase()}
               </p>
             </div>
-            <button
-              onClick={reset}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 text-xs font-mono text-muted-foreground hover:text-foreground hover:border-white/25 transition-all"
-            >
-              <RotateCcw size={12} /> Analyze Another
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowGenerator(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-neon-purple/10 to-neon-blue/10 border border-neon-purple/30 text-xs font-mono text-foreground hover:from-neon-purple/20 hover:to-neon-blue/20 hover:border-neon-purple/50 transition-all"
+              >
+                <Sparkles size={12} className="text-neon-purple" /> Generate Enhanced Resume
+              </button>
+              <button
+                onClick={reset}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 text-xs font-mono text-muted-foreground hover:text-foreground hover:border-white/25 transition-all"
+              >
+                <RotateCcw size={12} /> Analyze Another
+              </button>
+            </div>
           </div>
 
           {/* Results grid */}
