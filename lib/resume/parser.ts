@@ -12,7 +12,6 @@ export async function parseResume(buffer: Buffer, fileName: string): Promise<Par
   let text = ''
 
   if (ext === 'pdf') {
-    // pdf-parse has inconsistent ESM/CJS exports — use require for reliability
     const pdfParse = require('pdf-parse')
     const result = await pdfParse(buffer)
     text = result.text
