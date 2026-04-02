@@ -869,24 +869,12 @@ function LinkedInCard() {
 }
 
 // ─── Instagram Card ───────────────────────────────────────────────────────────
-function useInstagramStats() {
-  const [stats, setStats] = useState<{ followers: number; following: number } | null>(null)
-  useEffect(() => {
-    fetch('/api/instagram')
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.followers != null && d.following != null)
-          setStats({ followers: d.followers, following: d.following })
-      })
-      .catch(() => {})
-  }, [])
-  return stats
-}
+// Hardcoded counts — update manually when they change
+const INSTAGRAM_STATS = { followers: 882, following: 531 }
 
 function InstagramCard() {
-  const stats = useInstagramStats()
-  const { val: followerVal, ref: followerRef } = useCountUp(stats?.followers ?? 0)
-  const { val: followingVal, ref: followingRef } = useCountUp(stats?.following ?? 0)
+  const { val: followerVal, ref: followerRef } = useCountUp(INSTAGRAM_STATS.followers)
+  const { val: followingVal, ref: followingRef } = useCountUp(INSTAGRAM_STATS.following)
 
   return (
     <GlassCard delay={0.55}>
@@ -904,17 +892,17 @@ function InstagramCard() {
           <div className="flex flex-col">
             <div className="flex items-end gap-1">
               <span ref={followerRef} className="text-2xl font-bold font-mono text-[#e1306c] leading-none">
-                {stats === null ? <span className="text-muted-foreground/40 animate-pulse">—</span> : followerVal}
+                {followerVal}
               </span>
-              {stats !== null && <span className="text-xs text-muted-foreground mb-0.5">followers</span>}
+              <span className="text-xs text-muted-foreground mb-0.5">followers</span>
             </div>
           </div>
           <div className="flex flex-col">
             <div className="flex items-end gap-1">
               <span ref={followingRef} className="text-2xl font-bold font-mono text-[#e1306c] leading-none">
-                {stats === null ? <span className="text-muted-foreground/40 animate-pulse">—</span> : followingVal}
+                {followingVal}
               </span>
-              {stats !== null && <span className="text-xs text-muted-foreground mb-0.5">following</span>}
+              <span className="text-xs text-muted-foreground mb-0.5">following</span>
             </div>
           </div>
         </div>
