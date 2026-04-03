@@ -383,16 +383,16 @@ function MetricItem({ label, value, suffix = '+' }: { label: string; value: numb
   )
 }
 
-function useGitHubRepos() {
-  const [repos, setRepos] = useState<number | null>(null)
-  useEffect(() => {
-    fetch('/api/github')
-      .then((r) => r.json())
-      .then((d) => setRepos(d.totalRepos ?? null))
-      .catch(() => setRepos(null))
-  }, [])
-  return repos
-}
+// function useGitHubRepos() {
+//   const [repos, setRepos] = useState<number | null>(null)
+//   useEffect(() => {
+//     fetch('/api/github')
+//       .then((r) => r.json())
+//       .then((d) => setRepos(d.totalRepos ?? null))
+//       .catch(() => setRepos(null))
+//   }, [])
+//   return repos
+// }
 
 function MetricsCard() {
   return (
@@ -409,36 +409,69 @@ function MetricsCard() {
   )
 }
 
-function GitHubCard() {
-  const repos = useGitHubRepos()
-  const { val, ref } = useCountUp(repos ?? 0)
+// function GitHubCard() { ... } — replaced by AgeCard
 
+const BIRTH_DATE = new Date('2003-09-12T00:00:00')
+
+function useAge() {
+  const calc = () => {
+    const now = new Date()
+    let years = now.getFullYear() - BIRTH_DATE.getFullYear()
+    let months = now.getMonth() - BIRTH_DATE.getMonth()
+    let days = now.getDate() - BIRTH_DATE.getDate()
+    let hours = now.getHours() - BIRTH_DATE.getHours()
+    let minutes = now.getMinutes() - BIRTH_DATE.getMinutes()
+    let seconds = now.getSeconds() - BIRTH_DATE.getSeconds()
+    if (seconds < 0) { seconds += 60; minutes-- }
+    if (minutes < 0) { minutes += 60; hours-- }
+    if (hours < 0) { hours += 24; days-- }
+    if (days < 0) { months--; days += new Date(now.getFullYear(), now.getMonth(), 0).getDate() }
+    if (months < 0) { months += 12; years-- }
+    return { years, months, days, hours, minutes, seconds }
+  }
+  const [age, setAge] = useState(calc)
+  useEffect(() => {
+    const id = setInterval(() => setAge(calc()), 1000)
+    return () => clearInterval(id)
+  }, [])
+  return age
+}
+
+function AgeCard() {
+  const { years, months, days, hours, minutes, seconds } = useAge()
+  const unit = (val: number, label: string) => (
+    <div className="flex flex-col items-center">
+      <span className="text-base font-bold font-mono text-neon-blue leading-none">{String(val).padStart(2, '0')}</span>
+      <span className="text-[9px] font-mono text-muted-foreground mt-0.5">{label}</span>
+    </div>
+  )
   return (
     <GlassCard delay={0.45}>
-      <CardLabel><GitBranch size={10} /> Open Source</CardLabel>
-      <a
-        href="https://github.com/DineshDGaikwad"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex flex-col gap-2 group"
-      >
-        <span className="text-[10px] font-mono text-muted-foreground group-hover:text-neon-blue transition-colors">
-          @DineshDGaikwad ↗
-        </span>
-        <div className="flex items-end gap-1.5">
-          <span ref={ref} className="text-3xl font-bold font-mono text-neon-blue leading-none">
-            {repos === null ? <span className="text-muted-foreground/40 animate-pulse text-2xl">—</span> : val}
-          </span>
-          {repos !== null && <span className="text-xs text-muted-foreground mb-1">repos</span>}
+      <CardLabel><Activity size={10} /> Age</CardLabel>
+      <div className="flex flex-col gap-2.5">
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-3xl font-bold font-mono text-foreground leading-none">{years}</span>
+          <span className="text-xs text-muted-foreground">yrs old</span>
+        </div>
+        <div className="flex items-center justify-between">
+          {unit(months, 'mo')}
+          <span className="text-muted-foreground/30 font-mono text-xs">:</span>
+          {unit(days, 'days')}
+          <span className="text-muted-foreground/30 font-mono text-xs">:</span>
+          {unit(hours, 'hrs')}
+          <span className="text-muted-foreground/30 font-mono text-xs">:</span>
+          {unit(minutes, 'min')}
+          <span className="text-muted-foreground/30 font-mono text-xs">:</span>
+          {unit(seconds, 'sec')}
         </div>
         <div className="flex items-center gap-1.5">
           <span className="relative flex h-1.5 w-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-green opacity-75" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-neon-green" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-blue opacity-75" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-neon-blue" />
           </span>
-          <span className="text-[9px] font-mono text-muted-foreground">live · public repos</span>
+          <span className="text-[9px] font-mono text-muted-foreground">live · born 12 Sep 2003</span>
         </div>
-      </a>
+      </div>
     </GlassCard>
   )
 }
@@ -1037,7 +1070,7 @@ export function DashboardHero() {
               <SystemHealth />
             </div>
             <div className="col-span-6 md:col-span-3">
-              <GitHubCard />
+              <AgeCard />
             </div>
             <div className="col-span-6 md:col-span-3">
               <VisitorCard />
