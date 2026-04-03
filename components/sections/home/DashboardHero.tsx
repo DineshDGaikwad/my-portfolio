@@ -411,7 +411,7 @@ function MetricsCard() {
 
 // function GitHubCard() { ... } — replaced by AgeCard
 
-const BIRTH_DATE = new Date('2003-09-12T00:00:00')
+const BIRTH_DATE = new Date('2003-09-12T05:45:00Z') // 11:15 AM IST (UTC+5:30)
 
 function useAge() {
   const calc = () => {
@@ -454,7 +454,7 @@ function AgeCard() {
           <span className="text-xs text-muted-foreground">yrs old</span>
         </div>
         <div className="flex items-center justify-between">
-          {unit(months, 'mo')}
+          {unit(months, 'months')}
           <span className="text-muted-foreground/30 font-mono text-xs">:</span>
           {unit(days, 'days')}
           <span className="text-muted-foreground/30 font-mono text-xs">:</span>
