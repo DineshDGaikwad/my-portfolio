@@ -85,41 +85,43 @@ export function loadCode(problemId: string, lang: Language): string | null {
 }
 
 // ─── Timer component ──────────────────────────────────────────────────────────
-function Timer({ problemId, onPause, onResume }: {
+function Timer({ problemId, paused, onPause, onResume }: {
   problemId: string
+  paused: boolean
   onPause: () => void
   onResume: () => void
 }) {
-  const [seconds, setSeconds]   = useState<number | null>(null)
-  const [paused, setPaused]     = useState(false)
+  const [seconds, setSeconds] = useState<number | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // Init on mount / problem change
   useEffect(() => {
     if (typeof window === 'undefined') return
     initTimer(problemId)
-    const p = isPaused(problemId)
-    setPaused(p)
     setSeconds(getElapsed(problemId))
-
-    if (!p) {
+    if (!isPaused(problemId)) {
       intervalRef.current = setInterval(() => setSeconds(getElapsed(problemId)), 1000)
     }
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [problemId])
 
+  // Sync interval with paused prop
+  useEffect(() => {
+    if (paused) {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+      setSeconds(getElapsed(problemId))
+    } else {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+      intervalRef.current = setInterval(() => setSeconds(getElapsed(problemId)), 1000)
+    }
+  }, [paused, problemId])
+
   const handlePause = useCallback(() => {
     pauseTimer(problemId)
-    if (intervalRef.current) clearInterval(intervalRef.current)
-    setSeconds(getElapsed(problemId))
-    setPaused(true)
     onPause()
   }, [problemId, onPause])
 
   const handleResume = useCallback(() => {
     resumeTimer(problemId)
-    setPaused(false)
-    intervalRef.current = setInterval(() => setSeconds(getElapsed(problemId)), 1000)
     onResume()
   }, [problemId, onResume])
 
@@ -326,8 +328,8 @@ function EditorPanel({ problem, code, language, onCodeChange, onLanguageChange, 
     setPaused(isPaused(problem._id))
   }, [problem._id])
 
-  const handlePause  = useCallback(() => setPaused(true),  [])
-  const handleResume = useCallback(() => setPaused(false), [])
+  const handlePause  = useCallback(() => { pauseTimer(problem._id);  setPaused(true)  }, [problem._id])
+  const handleResume = useCallback(() => { resumeTimer(problem._id); setPaused(false) }, [problem._id])
 
   const monacoLang = LANGUAGES.find(l => l.key === language)?.monaco ?? 'javascript'
   const passed     = testResults.filter(r => r.passed).length
@@ -344,7 +346,7 @@ function EditorPanel({ problem, code, language, onCodeChange, onLanguageChange, 
         </div>
         <div className="flex items-center gap-2">
           {submitted && <span className="flex items-center gap-1 text-[10px] font-mono text-neon-green"><CheckCircle2 size={10} /> Submitted</span>}
-          <Timer problemId={problem._id} onPause={handlePause} onResume={handleResume} />
+          <Timer problemId={problem._id} paused={paused} onPause={handlePause} onResume={handleResume} />
         </div>
       </div>
 
@@ -390,10 +392,7 @@ function EditorPanel({ problem, code, language, onCodeChange, onLanguageChange, 
         />
         <AnimatePresence>
           {paused && (
-            <PauseOverlay onResume={() => {
-              resumeTimer(problem._id)
-              setPaused(false)
-            }} />
+            <PauseOverlay onResume={handleResume} />
           )}
         </AnimatePresence>
       </div>
