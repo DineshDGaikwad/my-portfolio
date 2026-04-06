@@ -234,6 +234,14 @@ export function PracticePage() {
 
     fetch(`/api/arena/init?userId=${encodeURIComponent(uid)}`)
       .then(r => r.json())
+      .then(async d => {
+        // Retry once on cold-start failure
+        if (!d.success) {
+          await new Promise(res => setTimeout(res, 1500))
+          return fetch(`/api/arena/init?userId=${encodeURIComponent(uid)}`).then(r => r.json())
+        }
+        return d
+      })
       .then(d => {
         if (!d.success) { setLoading(false); return }
 
