@@ -18,17 +18,19 @@ export async function connectDB() {
   if (!globalWithMongoose.mongoose.promise) {
     globalWithMongoose.mongoose.promise = mongoose.connect(MONGODB_URI, {
       bufferCommands:           false,
-      serverSelectionTimeoutMS: 8000,  // fail fast instead of 30s default
-      connectTimeoutMS:         8000,
-      socketTimeoutMS:          10000,
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS:         10000,
+      socketTimeoutMS:          20000,
       maxPoolSize:              10,
+      tls:                      true,
+      tlsAllowInvalidCertificates: false,
+      retryWrites:              true,
     })
   }
 
   try {
     globalWithMongoose.mongoose.conn = await globalWithMongoose.mongoose.promise
   } catch (err) {
-    // Reset promise so next request retries the connection
     globalWithMongoose.mongoose.promise = null
     throw err
   }
