@@ -413,32 +413,34 @@ function MetricsCard() {
 
 const BIRTH_DATE = new Date('2003-09-12T05:45:00Z') // 11:15 AM IST (UTC+5:30)
 
+function calcAge() {
+  const now = new Date()
+  let years = now.getFullYear() - BIRTH_DATE.getFullYear()
+  let months = now.getMonth() - BIRTH_DATE.getMonth()
+  let days = now.getDate() - BIRTH_DATE.getDate()
+  let hours = now.getHours() - BIRTH_DATE.getHours()
+  let minutes = now.getMinutes() - BIRTH_DATE.getMinutes()
+  let seconds = now.getSeconds() - BIRTH_DATE.getSeconds()
+  if (seconds < 0) { seconds += 60; minutes-- }
+  if (minutes < 0) { minutes += 60; hours-- }
+  if (hours < 0) { hours += 24; days-- }
+  if (days < 0) { months--; days += new Date(now.getFullYear(), now.getMonth(), 0).getDate() }
+  if (months < 0) { months += 12; years-- }
+  return { years, months, days, hours, minutes, seconds }
+}
+
 function useAge() {
-  const calc = () => {
-    const now = new Date()
-    let years = now.getFullYear() - BIRTH_DATE.getFullYear()
-    let months = now.getMonth() - BIRTH_DATE.getMonth()
-    let days = now.getDate() - BIRTH_DATE.getDate()
-    let hours = now.getHours() - BIRTH_DATE.getHours()
-    let minutes = now.getMinutes() - BIRTH_DATE.getMinutes()
-    let seconds = now.getSeconds() - BIRTH_DATE.getSeconds()
-    if (seconds < 0) { seconds += 60; minutes-- }
-    if (minutes < 0) { minutes += 60; hours-- }
-    if (hours < 0) { hours += 24; days-- }
-    if (days < 0) { months--; days += new Date(now.getFullYear(), now.getMonth(), 0).getDate() }
-    if (months < 0) { months += 12; years-- }
-    return { years, months, days, hours, minutes, seconds }
-  }
-  const [age, setAge] = useState(calc)
+  const [age, setAge] = useState<ReturnType<typeof calcAge> | null>(null)
   useEffect(() => {
-    const id = setInterval(() => setAge(calc()), 1000)
+    setAge(calcAge())
+    const id = setInterval(() => setAge(calcAge()), 1000)
     return () => clearInterval(id)
   }, [])
   return age
 }
 
 function AgeCard() {
-  const { years, months, days, hours, minutes, seconds } = useAge()
+  const age = useAge()
   const unit = (val: number, label: string) => (
     <div className="flex flex-col items-center">
       <span className="text-base font-bold font-mono text-neon-blue leading-none">{String(val).padStart(2, '0')}</span>
@@ -450,19 +452,27 @@ function AgeCard() {
       <CardLabel><Activity size={10} /> Age</CardLabel>
       <div className="flex flex-col gap-2.5">
         <div className="flex items-baseline gap-1.5">
-          <span className="text-3xl font-bold font-mono text-foreground leading-none">{years}</span>
+          <span className="text-3xl font-bold font-mono text-foreground leading-none">
+            {age ? age.years : <span className="text-muted-foreground/40 animate-pulse">—</span>}
+          </span>
           <span className="text-xs text-muted-foreground">yrs old</span>
         </div>
         <div className="flex items-center justify-between">
-          {unit(months, 'months')}
-          <span className="text-muted-foreground/30 font-mono text-xs">:</span>
-          {unit(days, 'days')}
-          <span className="text-muted-foreground/30 font-mono text-xs">:</span>
-          {unit(hours, 'hrs')}
-          <span className="text-muted-foreground/30 font-mono text-xs">:</span>
-          {unit(minutes, 'min')}
-          <span className="text-muted-foreground/30 font-mono text-xs">:</span>
-          {unit(seconds, 'sec')}
+          {age ? (
+            <>
+              {unit(age.months, 'mo')}
+              <span className="text-muted-foreground/30 font-mono text-xs">:</span>
+              {unit(age.days, 'days')}
+              <span className="text-muted-foreground/30 font-mono text-xs">:</span>
+              {unit(age.hours, 'hrs')}
+              <span className="text-muted-foreground/30 font-mono text-xs">:</span>
+              {unit(age.minutes, 'min')}
+              <span className="text-muted-foreground/30 font-mono text-xs">:</span>
+              {unit(age.seconds, 'sec')}
+            </>
+          ) : (
+            <span className="text-[10px] font-mono text-muted-foreground/40 animate-pulse">calculating...</span>
+          )}
         </div>
         <div className="flex items-center gap-1.5">
           <span className="relative flex h-1.5 w-1.5">

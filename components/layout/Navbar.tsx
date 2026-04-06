@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import { useAppStore } from '@/store/useAppStore'
 import { navItems, siteConfig } from '@/config/site'
 import { cn } from '@/lib/utils'
-import { Sun, Moon, Terminal, Search, User, Briefcase, Zap, Mail, Sparkles } from '@/components/ui/Icons'
+import { Sun, Moon, Terminal, Search, User, Briefcase, Zap, Mail, Sparkles, Code2 } from '@/components/ui/Icons'
 
 // Icons for both desktop and mobile
 const navIcons: Record<string, React.ElementType> = {
@@ -15,6 +15,7 @@ const navIcons: Record<string, React.ElementType> = {
   skills:   Zap,
   contact:  Mail,
   resume:   Sparkles,
+  practice: Code2,
 }
 
 export function Navbar() {
