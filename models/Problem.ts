@@ -14,14 +14,23 @@ const ProblemSchema = new Schema(
         explanation: { type: String },
       },
     ],
+    testCases: [
+      {
+        input:    { type: String },
+        expected: { type: String },
+      },
+    ],
     constraints: [{ type: String }],
     starterCode: {
       javascript: { type: String, default: '' },
+      typescript: { type: String, default: '' },
       python:     { type: String, default: '' },
       java:       { type: String, default: '' },
+      cpp:        { type: String, default: '' },
+      go:         { type: String, default: '' },
     },
     isDaily:   { type: Boolean, default: false },
-    dailyDate: { type: String, default: null }, // 'YYYY-MM-DD'
+    dailyDate: { type: String, default: null },
   },
   { timestamps: true }
 )

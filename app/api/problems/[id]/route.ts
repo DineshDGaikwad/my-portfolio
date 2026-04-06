@@ -18,6 +18,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
     return NextResponse.json({ success: true, problem })
   } catch (err: any) {
+    console.error('[problems/id]', err)
     return NextResponse.json({ error: err.message ?? 'Failed to fetch problem' }, { status: 500 })
   }
 }
