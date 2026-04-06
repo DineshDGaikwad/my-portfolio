@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed": "npx tsx scripts/seed-problems.ts"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
@@ -42,11 +43,13 @@
     "@types/react-dom": "^18",
     "@types/react-syntax-highlighter": "^15.5.13",
     "autoprefixer": "^10.0.1",
+    "dotenv": "^17.4.1",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
     "postcss": "^8",
     "prisma": "^5.17.0",
     "tailwindcss": "^3.4.1",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
