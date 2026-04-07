@@ -29,5 +29,5 @@ export const navItems = [
   { label: 'Skills', href: '#skills' },
   { label: 'Contact', href: '#contact' },
   { label: 'Resume AI', href: '/resume' },
-  { label: 'Practice', href: '/practice' },
+  { label: 'Coding', href: '/practice' },
 ]

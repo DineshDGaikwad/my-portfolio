@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Code2, Flame, Trophy, Sparkles, RotateCcw,
-  CheckCircle2, Zap, User, Target, TrendingUp, ChevronDown, ChevronUp
+  Zap, User, Target, TrendingUp, ChevronDown, ChevronUp
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ProblemSidebar } from './ProblemSidebar'
@@ -68,11 +68,6 @@ function getCode(problem: Problem, lang: Language): string {
   return problem.starterCode?.[lang] ?? problem.starterCode?.javascript ?? '// Write your solution here\n'
 }
 
-function runTestCases(problem: Problem): TestResult[] {
-  return (problem.testCases ?? []).map((tc, i) => ({
-    input: tc.input, expected: tc.expected, passed: true, hidden: i >= 2, index: i,
-  }))
-}
 
 async function fetchFullProblem(id: string): Promise<Problem | null> {
   if (problemCache.has(id)) return problemCache.get(id)!
@@ -216,6 +211,7 @@ export function PracticePage() {
   const [aiReview, setAiReview]       = useState('')
   const [aiLoading, setAiLoading]     = useState(false)
   const [submitting, setSubmitting]   = useState(false)
+  const [running, setRunning]         = useState(false)
   const [submitted, setSubmitted]     = useState(false)
   const [testResults, setTestResults] = useState<TestResult[]>([])
   const [progress, setProgress]       = useState<ProgressEntry[]>([])
@@ -312,23 +308,94 @@ export function PracticePage() {
     if (selected) saveCode(String(selected._id), language, newCode)
   }, [selected, language])
 
+  const handleRun = useCallback(async () => {
+    if (!selected || !code.trim() || running || submitting) return
+    setRunning(true)
+    setTestResults([])
+    try {
+      const res  = await fetch('/api/arena/run', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, language, testCases: selected.testCases.slice(0, 2) }),
+      })
+      const data = await res.json()
+      if (!res.ok || data.error) {
+        setTestResults(selected.testCases.slice(0, 2).map((tc, i) => ({
+          index: i, input: tc.input, expected: tc.expected,
+          actual: '', passed: false, hidden: false,
+          error: data.error ?? 'Execution failed',
+        })))
+        return
+      }
+      setTestResults(data.results)
+    } catch (err: any) {
+      setTestResults(selected.testCases.slice(0, 2).map((tc, i) => ({
+        index: i, input: tc.input, expected: tc.expected,
+        actual: '', passed: false, hidden: false,
+        error: err?.message ?? 'Network error',
+      })))
+    } finally {
+      setRunning(false)
+    }
+  }, [selected, code, language, running, submitting])
+
   const handleSubmit = useCallback(async () => {
     if (!selected || !code.trim() || submitting) return
     setSubmitting(true)
+    setSubmitted(false)
+    setTestResults([])
     const timeTaken = Math.floor((Date.now() - startRef.current) / 1000)
-    setTestResults(runTestCases(selected))
     try {
-      await fetch('/api/progress', {
+      const runRes  = await fetch('/api/arena/run', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: userId.current, problemId: selected._id, slug: selected.slug, solved: true, timeTaken, language, code }),
+        body: JSON.stringify({ code, language, testCases: selected.testCases }),
       })
-      setSubmitted(true)
-      setProgress(prev => {
-        const exists = prev.find(p => p.problemId === selected._id)
-        if (exists) return prev.map(p => p.problemId === selected._id ? { ...p, solved: true, attempts: p.attempts + 1 } : p)
-        return [...prev, { problemId: selected._id, solved: true, attempts: 1 }]
-      })
-    } finally { setSubmitting(false) }
+      const runData = await runRes.json()
+
+      if (!runRes.ok || runData.error) {
+        setTestResults(selected.testCases.map((tc, i) => ({
+          index: i, input: tc.input, expected: tc.expected,
+          actual: '', passed: false, hidden: i >= 2,
+          error: runData.error ?? 'Execution failed',
+        })))
+        return
+      }
+
+      const results: TestResult[] = runData.results
+      setTestResults(results)
+
+      const allPassed = results.length > 0 && results.every(r => r.passed)
+      if (allPassed) {
+        setSubmitted(true)
+        await fetch('/api/progress', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: userId.current, problemId: selected._id, slug: selected.slug, solved: true, timeTaken, language, code }),
+        })
+        setProgress(prev => {
+          const exists = prev.find(p => p.problemId === selected._id)
+          if (exists) return prev.map(p => p.problemId === selected._id ? { ...p, solved: true, attempts: p.attempts + 1 } : p)
+          return [...prev, { problemId: selected._id, solved: true, attempts: 1 }]
+        })
+      } else {
+        // Record the attempt even if not all passed
+        await fetch('/api/progress', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: userId.current, problemId: selected._id, slug: selected.slug, solved: false, timeTaken, language, code }),
+        }).catch(() => {})
+        setProgress(prev => {
+          const exists = prev.find(p => p.problemId === selected._id)
+          if (exists) return prev.map(p => p.problemId === selected._id ? { ...p, attempts: p.attempts + 1 } : p)
+          return [...prev, { problemId: selected._id, solved: false, attempts: 1 }]
+        })
+      }
+    } catch (err: any) {
+      setTestResults(selected.testCases.map((tc, i) => ({
+        index: i, input: tc.input, expected: tc.expected,
+        actual: '', passed: false, hidden: i >= 2,
+        error: err?.message ?? 'Network error',
+      })))
+    } finally {
+      setSubmitting(false)
+    }
   }, [selected, code, language, submitting])
 
   const handleAIReview = useCallback(async () => {
@@ -418,17 +485,6 @@ export function PracticePage() {
                 <Sparkles size={11} className={aiLoading ? 'animate-pulse' : ''} />
                 <span className="hidden sm:inline">{aiLoading ? 'Reviewing...' : 'AI Review'}</span>
               </button>
-              <button onClick={handleSubmit} disabled={!code.trim() || submitting || submitted}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono border transition-all',
-                  submitted ? 'bg-neon-green/10 border-neon-green/30 text-neon-green'
-                    : 'bg-neon-blue/10 border-neon-blue/30 text-neon-blue hover:bg-neon-blue/20 disabled:opacity-40'
-                )}
-              >
-                {submitted ? <><CheckCircle2 size={11} /><span className="hidden sm:inline"> Solved!</span></>
-                  : submitting ? <><RotateCcw size={11} className="animate-spin" /><span className="hidden sm:inline"> Running...</span></>
-                  : <><Zap size={11} /><span className="hidden sm:inline"> Submit</span></>}
-              </button>
             </div>
           </div>
         </div>
@@ -461,15 +517,19 @@ export function PracticePage() {
                 <CodeEditor
                   problem={selected} code={code} language={language}
                   onCodeChange={handleCodeChange} onLanguageChange={handleLanguageChange}
+                  onRun={handleRun} onSubmit={handleSubmit}
+                  running={running} submitting={submitting}
                   submitted={submitted} testResults={testResults}
                   viewMode="problem"
                 />
               </div>
               {/* Editor */}
-              <div className="overflow-hidden">
+              <div className="overflow-hidden flex flex-col">
                 <CodeEditor
                   problem={selected} code={code} language={language}
                   onCodeChange={handleCodeChange} onLanguageChange={handleLanguageChange}
+                  onRun={handleRun} onSubmit={handleSubmit}
+                  running={running} submitting={submitting}
                   submitted={submitted} testResults={testResults}
                   viewMode="editor"
                 />

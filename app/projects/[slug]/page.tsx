@@ -7,7 +7,7 @@ interface Props {
   params: { slug: string }
 }
 
-export async function generateStaticParams() {
+export function generateStaticParams() {
   return projects.map((p) => ({ slug: p.slug }))
 }
 
@@ -23,5 +23,5 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default function CaseStudyPage({ params }: Props) {
   const project = projects.find((p) => p.slug === params.slug)
   if (!project) notFound()
-  return <CaseStudyClient project={project} />
+  return <CaseStudyClient project={project!} />
 }

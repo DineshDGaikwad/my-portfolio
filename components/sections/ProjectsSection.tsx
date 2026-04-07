@@ -197,9 +197,10 @@ export function ProjectsSection() {
                 aria-label="Projects list"
               >
                 {filtered.map((project, i) => {
-                  const impact = getImpact(project.tags.length, !!project.metrics)
+                  const impact = getImpact(project.tags?.length ?? 0, !!project.metrics)
                   const catColor = categoryColors[project.category] ?? '#00d4ff'
                   const isInternship = project.source === 'internship'
+                  const links = project.links ?? {}
 
                   return (
                     <motion.li
@@ -303,9 +304,9 @@ export function ProjectsSection() {
                           {/* Footer */}
                           <div className="px-6 py-3.5 border-t border-white/5 flex items-center justify-between bg-white/[0.02]">
                             <div className="flex gap-3">
-                              {project.links.github && (
+                              {links.github && (
                                 <a
-                                  href={project.links.github}
+                                  href={links.github}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   aria-label={`${project.title} GitHub`}
@@ -315,9 +316,9 @@ export function ProjectsSection() {
                                   <Github size={15} aria-hidden="true" />
                                 </a>
                               )}
-                              {project.links.live && (
+                              {links.live && (
                                 <a
-                                  href={project.links.live}
+                                  href={links.live}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   aria-label={`${project.title} live demo`}

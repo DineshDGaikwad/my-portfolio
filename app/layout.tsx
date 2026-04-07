@@ -67,7 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Navbar />
           <main id="main-content">{children}</main>
           <Footer />
-          <AIAssistant />
+          {/* <AIAssistant /> */}
         </Providers>
       </body>
     </html>

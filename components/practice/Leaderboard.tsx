@@ -16,7 +16,12 @@ interface LeaderboardEntry {
   bestStreak: number
 }
 
-const RANK_MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
+const RANK_MEDAL: Record<number, string> = { 1: '#1', 2: '#2', 3: '#3' }
+const RANK_COLOR: Record<number, string> = {
+  1: 'text-yellow-400',
+  2: 'text-gray-300',
+  3: 'text-orange-400',
+}
 
 function getName(entry: LeaderboardEntry, isMe: boolean) {
   if (isMe) return 'You'
@@ -107,7 +112,7 @@ export function Leaderboard({ currentUserId }: Props) {
                   isMe ? 'bg-neon-blue/10 border-neon-blue/30' : 'bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12]'
                 )}
               >
-                <span className="text-base leading-none">{RANK_MEDAL[entry.rank] ?? `#${entry.rank}`}</span>
+                <span className={cn('text-[11px] font-bold font-mono leading-none', RANK_COLOR[entry.rank] ?? 'text-muted-foreground')}>{RANK_MEDAL[entry.rank] ?? `#${entry.rank}`}</span>
                 <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-black shrink-0"
                   style={{ backgroundColor: entry.avatarColor }}
                 >

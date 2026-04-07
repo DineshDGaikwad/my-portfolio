@@ -1162,6 +1162,234 @@ public:
       ],
     },
   },
+  // ─── US Hospital Cost Comparison ────────────────────────────────────────────────────────────
+  {
+    id: '11',
+    slug: 'hospital-cost-compass',
+    title: 'Hospital Cost Compass',
+    tagline: 'Nationwide US hospital procedure cost comparison with tier analysis, facility scoring, and insurance-adjusted pricing',
+    description:
+      'A full-stack healthcare analytics platform that aggregates and compares procedure costs across 6,000+ US hospitals. Features hospital tier classification (Magnet/Teaching/Community), insurance-adjusted cost modeling, facility quality scoring, geographic heat maps, and multi-factor comparison across 500+ medical procedures. Built with AngularJS, .NET 8 Web API, and MySQL.',
+    thumbnail: '/images/projects/hospital-cost-compass.jpg',
+    images: [],
+    tags: ['AngularJS', '.NET 8', 'MySQL', 'REST API', 'JWT', 'Data Analytics'],
+    category: 'fullstack',
+    source: 'internship',
+    featured: true,
+    status: 'completed',
+    year: 2025,
+    links: {},
+    metrics: [
+      { label: 'Hospitals', value: '6,000+' },
+      { label: 'Procedures', value: '500+' },
+      { label: 'States', value: '50' },
+    ],
+    caseStudy: {
+      problem:
+        'Patients and insurers had no transparent, unified platform to compare what different US hospitals charge for the same procedure — costs for a knee replacement ranged from $15,000 to $120,000 across hospitals in the same city.',
+      problemDetailed:
+        'Healthcare cost opacity is one of the most critical problems in the US medical system. The same MRI scan can cost $400 at a community hospital and $4,000 at an academic medical center three miles away. Patients making elective procedure decisions, HR teams selecting insurance networks, and policy researchers analyzing cost drivers all needed a single platform that could normalize, compare, and explain these disparities. The technical challenge was ingesting CMS (Centers for Medicare & Medicaid Services) public datasets, normalizing inconsistent procedure codes across hospital systems, and building a multi-dimensional comparison engine that accounts for hospital tier, geographic cost-of-living adjustments, insurance network discounts, and facility quality scores — all while keeping query response times under 200ms on a dataset of 50M+ cost records.',
+      approach:
+        'Built a layered .NET 8 Web API with a MySQL analytical database. Ingested and normalized CMS public datasets. Designed a multi-factor scoring engine for hospital tiers and facility quality. AngularJS frontend renders interactive comparison tables, geographic heat maps, and procedure cost distribution charts.',
+      architecture:
+        'AngularJS SPA → .NET 8 REST API → Service Layer → Repository (Dapper + MySQL) → MySQL Analytical DB → CMS Data Pipeline → Cost Normalization Engine',
+      techStack: [
+        { name: 'AngularJS',    color: '#dd0031' },
+        { name: '.NET 8',       color: '#512bd4' },
+        { name: 'MySQL',        color: '#4479a1' },
+        { name: 'Dapper ORM',   color: '#1a9fd8' },
+        { name: 'JWT Auth',     color: '#00d4ff' },
+        { name: 'Swagger',      color: '#85ea2d' },
+      ],
+      featuresExtended: [
+        {
+          category: 'Cost Comparison Engine',
+          icon: 'BarChart2',
+          items: [
+            'Side-by-side cost comparison for 500+ procedures across any hospitals',
+            'Insurance-adjusted pricing — shows negotiated rates vs. chargemaster prices',
+            'Geographic cost-of-living normalization for fair cross-region comparison',
+            'Percentile ranking — see where a hospital sits in national cost distribution',
+            'Historical cost trend analysis (3-year rolling window)',
+            'Procedure bundling — compare total episode-of-care costs, not just line items',
+          ],
+        },
+        {
+          category: 'Hospital Intelligence',
+          icon: 'Building2',
+          items: [
+            'Hospital tier classification — Magnet, Teaching, Critical Access, Community',
+            'Multi-factor facility quality score (outcomes + safety + patient satisfaction)',
+            'Bed count, trauma level, and specialty service availability',
+            'CMS star rating and HCAHPS patient satisfaction integration',
+            'Network participation tracking — in-network vs. out-of-network flags',
+            'Ownership type analysis — nonprofit, for-profit, government',
+          ],
+        },
+        {
+          category: 'Analytics & Visualization',
+          icon: 'TrendingUp',
+          items: [
+            'Interactive US heat map — cost intensity by state and county',
+            'Procedure cost distribution histogram with outlier detection',
+            'Cost vs. quality scatter plot — identify high-value hospitals',
+            'Insurance plan comparison — which plan gives best access at lowest cost',
+            'Export comparison reports as PDF and CSV',
+            'Saved comparison lists with shareable links',
+          ],
+        },
+        {
+          category: 'Data & Compliance',
+          icon: 'Shield',
+          items: [
+            'CMS Inpatient Prospective Payment System (IPPS) data integration',
+            'Hospital Price Transparency Rule compliance (2021 mandate)',
+            'ICD-10 and DRG procedure code normalization across hospital systems',
+            'HIPAA-compliant data handling — no patient-level data stored',
+            'Automated weekly CMS dataset refresh pipeline',
+            'Data quality scoring — flags hospitals with incomplete price disclosures',
+          ],
+        },
+      ],
+      challenges: [
+        {
+          title: 'Inconsistent procedure code mapping across hospitals',
+          description: 'Different hospitals use different coding systems (DRG, CPT, ICD-10) for the same procedure, making direct comparison impossible',
+          solution: 'Built a procedure code normalization layer that maps all coding systems to a unified internal procedure taxonomy. Used CMS crosswalk tables as the source of truth, with fuzzy matching for non-standard descriptions',
+        },
+        {
+          title: 'Query performance on 50M+ cost records',
+          description: 'Multi-hospital, multi-procedure comparison queries were timing out at 8-12 seconds on the raw dataset',
+          solution: 'Designed a pre-aggregated summary table (HospitalProcedureSummary) updated nightly. Added composite indexes on (procedure_id, state, hospital_tier). Queries now return in under 150ms',
+        },
+      ],
+      challengesExtended: [
+        {
+          title: 'Geographic cost normalization',
+          description: 'A $50,000 procedure in rural Mississippi is not comparable to the same procedure in Manhattan — raw cost comparison misleads users.',
+          solution: 'Integrated BLS Geographic Cost Index (GCI) data. Every cost is stored as both raw and GCI-adjusted. The comparison engine defaults to adjusted costs with a toggle for raw prices.',
+        },
+        {
+          title: 'Hospital tier classification accuracy',
+          description: 'No single authoritative source classifies all 6,000+ US hospitals into consistent tiers.',
+          solution: 'Built a multi-source classification engine combining AHA Annual Survey data, CMS certification records, Magnet designation database, and bed count thresholds. Confidence score attached to each classification.',
+        },
+        {
+          title: 'Insurance-adjusted price modeling',
+          description: 'Chargemaster prices (what hospitals list) bear no relation to what insurers actually pay — showing raw prices misleads users.',
+          solution: 'Modeled negotiated rates using CMS machine-readable files (MRFs) mandated by the Transparency in Coverage rule. Where MRFs were unavailable, applied actuarial discount factors by payer type and hospital tier.',
+        },
+        {
+          title: 'Data freshness vs. query performance',
+          description: 'CMS releases updated datasets quarterly. Rebuilding all summary tables on each release took 4+ hours, causing stale data windows.',
+          solution: 'Implemented incremental refresh — only recompute summaries for hospitals with changed records. Reduced refresh time from 4 hours to 22 minutes.',
+        },
+      ],
+      designDecisions: [
+        'MySQL over SQL Server — CMS datasets are distributed as CSV/TSV; MySQL LOAD DATA INFILE ingests 10M rows in under 60 seconds',
+        'Dapper over EF Core — analytical queries with 8-way joins benefit from hand-tuned SQL; Dapper gives full control without ORM overhead',
+        'Pre-aggregated summary tables — real-time aggregation on 50M rows is not viable; nightly summaries with incremental refresh is the right tradeoff',
+        'AngularJS for the frontend — matches the internship stack; the comparison table and filter UI map naturally to AngularJS two-way binding',
+        'Procedure taxonomy as a first-class entity — without a unified procedure model, the entire comparison engine breaks down',
+      ],
+      performanceNotes: [
+        'Composite index on (procedure_id, hospital_tier, state) reduces comparison query time from 8s to 150ms',
+        'MySQL LOAD DATA INFILE for CMS dataset ingestion — 10M rows in 58 seconds vs. 45 minutes with row-by-row INSERT',
+        'Dapper compiled queries on the hot comparison endpoint — eliminates query plan recompilation overhead',
+        'Response caching on state-level aggregation endpoints — 15-minute TTL, reduces DB load by 60% during peak hours',
+        'Pagination with keyset (cursor-based) pagination on hospital search — avoids OFFSET performance degradation on large result sets',
+      ],
+      securityNotes: [
+        'JWT Bearer auth with role claims — Admin (data management), Analyst (full access), Public (read-only comparison)',
+        'No patient-level data stored — all data is hospital-level aggregates from public CMS datasets (HIPAA N/A)',
+        'Rate limiting on comparison API — prevents scraping of the full dataset via repeated API calls',
+        'SQL parameterization throughout Dapper queries — zero risk of SQL injection on dynamic filter construction',
+        'Audit log for all data modification operations — tracks who updated hospital records and when',
+      ],
+      edgeCases: [
+        'Hospital mergers — when two hospitals merge mid-year, historical cost data is attributed to the surviving entity with a merger flag',
+        'Critical Access Hospitals with <25 beds — excluded from tier comparisons but shown in geographic coverage maps',
+        'Procedures with fewer than 11 cases reported — CMS suppresses these for privacy; shown as "Insufficient Data" rather than zero',
+        'Hospitals that have not complied with Price Transparency Rule — flagged with a compliance warning, estimated costs shown from CMS claims data',
+        'Multi-campus hospital systems — costs aggregated at the system level with drill-down to individual campus',
+      ],
+      learnings: [
+        'Healthcare data is extraordinarily messy — the normalization layer took 40% of total development time and was the most critical component',
+        'Pre-aggregation is the only viable strategy for analytical queries on datasets of this scale — real-time aggregation is a trap',
+        'Domain knowledge matters as much as technical skill — understanding DRG vs. CPT vs. ICD-10 was prerequisite to building the normalization engine',
+        'Dapper shines for read-heavy analytical workloads where query shape is known — EF Core adds overhead without benefit here',
+      ],
+      futureImprovements: [
+        'ML-based cost anomaly detection — flag hospitals with statistically unusual pricing patterns for regulatory review',
+        'Patient journey cost modeling — estimate total out-of-pocket cost for a care pathway, not just individual procedures',
+        'Real-time insurance network API integration — live in-network/out-of-network status per user\'s insurance plan',
+        'Natural language procedure search — "how much does a hip replacement cost" maps to the correct DRG/CPT codes automatically',
+        'Mobile app with location-based hospital cost lookup',
+      ],
+      results: [
+        { metric: 'Hospitals indexed',    value: '6,200+',  description: 'All CMS-certified US hospitals' },
+        { metric: 'Procedures covered',   value: '500+',    description: 'Normalized across DRG, CPT, ICD-10' },
+        { metric: 'Cost records',         value: '50M+',    description: 'Ingested from CMS IPPS datasets' },
+        { metric: 'Query response time',  value: '<150ms',  description: 'Via pre-aggregated summary tables + composite indexes' },
+        { metric: 'Data refresh',         value: '22 min',  description: 'Incremental CMS dataset refresh pipeline' },
+        { metric: 'States covered',       value: '50 + DC', description: 'Full national coverage' },
+      ],
+      codeSnippets: [
+        {
+          title: 'Dapper — Multi-hospital procedure cost comparison query',
+          language: 'csharp',
+          code: `public async Task<IEnumerable<ProcedureCostDto>> CompareProcedureCostsAsync(
+    int procedureId, IEnumerable<int> hospitalIds, bool adjustedCost = true)
+{
+    var costColumn = adjustedCost ? "adjusted_avg_cost" : "raw_avg_cost";
+    var sql = $"""
+        SELECT
+            h.hospital_name,
+            h.tier,
+            h.state,
+            h.cms_star_rating,
+            s.{costColumn}          AS avg_cost,
+            s.cost_percentile_national,
+            s.case_volume,
+            s.quality_score
+        FROM hospital_procedure_summary s
+        JOIN hospitals h ON h.id = s.hospital_id
+        WHERE s.procedure_id = @ProcedureId
+          AND s.hospital_id IN @HospitalIds
+        ORDER BY s.{costColumn}
+    """;
+    return await _db.QueryAsync<ProcedureCostDto>(sql,
+        new { ProcedureId = procedureId, HospitalIds = hospitalIds });
+}`,
+          description: 'Dapper raw SQL for the comparison hot path — hand-tuned query with composite index on (procedure_id, hospital_id)',
+        },
+        {
+          title: 'Procedure code normalization — DRG to internal taxonomy',
+          language: 'csharp',
+          code: `public int? NormalizeDrgCode(string drgCode, string description)
+{
+    // 1. Exact match in crosswalk table
+    if (_crosswalk.TryGetValue(drgCode, out var exactId))
+        return exactId;
+
+    // 2. Fuzzy match on description (Levenshtein distance)
+    var best = _procedureTaxonomy
+        .Select(p => new {
+            p.Id,
+            Score = LevenshteinSimilarity(description, p.StandardDescription)
+        })
+        .Where(x => x.Score > 0.82)
+        .OrderByDescending(x => x.Score)
+        .FirstOrDefault();
+
+    return best?.Id; // null = unmapped, flagged for manual review
+}`,
+          description: 'Two-pass normalization: exact crosswalk lookup first, fuzzy description matching as fallback',
+        },
+      ],
+    },
+  },
+
   // ─── Portfolio ────────────────────────────────────────────────────────────
   {
     id: '10',

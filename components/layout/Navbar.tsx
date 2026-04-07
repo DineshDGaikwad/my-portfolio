@@ -16,6 +16,7 @@ const navIcons: Record<string, React.ElementType> = {
   contact:  Mail,
   resume:   Sparkles,
   practice: Code2,
+  coding: Code2,
 }
 
 export function Navbar() {

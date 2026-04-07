@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Clock, BookOpen, Code2, CheckCircle2, XCircle, ChevronDown, Play, Lock, Pause } from 'lucide-react'
+import { Clock, BookOpen, Code2, CheckCircle2, XCircle, ChevronDown, Play, Lock, Pause, RotateCcw, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Problem, Language } from './PracticePage'
 import { LANGUAGES } from './PracticePage'
@@ -184,9 +184,11 @@ function PauseOverlay({ onResume }: { onResume: () => void }) {
 export interface TestResult {
   input: string
   expected: string
+  actual?: string
   passed: boolean
   hidden: boolean
   index: number
+  error?: string
 }
 
 interface Props {
@@ -195,6 +197,10 @@ interface Props {
   language: Language
   onCodeChange: (c: string) => void
   onLanguageChange: (l: Language) => void
+  onRun: () => void
+  onSubmit: () => void
+  running: boolean
+  submitting: boolean
   submitted: boolean
   testResults: TestResult[]
   viewMode?: 'problem' | 'editor' | 'both'
@@ -309,12 +315,16 @@ function ProblemPanel({ problem, testResults, submitted }: {
 }
 
 // ─── Editor Panel ─────────────────────────────────────────────────────────────
-function EditorPanel({ problem, code, language, onCodeChange, onLanguageChange, submitted, testResults }: {
+function EditorPanel({ problem, code, language, onCodeChange, onLanguageChange, onRun, onSubmit, running, submitting, submitted, testResults }: {
   problem: Problem
   code: string
   language: Language
   onCodeChange: (c: string) => void
   onLanguageChange: (l: Language) => void
+  onRun: () => void
+  onSubmit: () => void
+  running: boolean
+  submitting: boolean
   submitted: boolean
   testResults: TestResult[]
 }) {
@@ -368,7 +378,7 @@ function EditorPanel({ problem, code, language, onCodeChange, onLanguageChange, 
       </div>
 
       {/* Monaco + Pause overlay */}
-      <div className="flex-1 overflow-hidden relative">
+      <div className="flex-1 min-h-0 overflow-hidden relative">
         <MonacoEditor
           height="100%"
           language={monacoLang}
@@ -397,25 +407,53 @@ function EditorPanel({ problem, code, language, onCodeChange, onLanguageChange, 
         </AnimatePresence>
       </div>
 
+      {/* Action bar — Run + Submit */}
+      <div className="shrink-0 flex items-center justify-between px-4 py-2 border-t border-white/[0.06] bg-white/[0.01]">
+        <div className="flex items-center gap-2">
+          {testResults.length > 0 && (
+            <button onClick={() => setShowResults(v => !v)} className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground hover:text-foreground transition-colors">
+              <span className={cn('font-bold', allPassed ? 'text-neon-green' : 'text-red-400')}>{passed}/{total}</span>
+              <span className="text-muted-foreground/50">tests</span>
+              {showResults ? <ChevronDown size={10} /> : <ChevronDown size={10} className="rotate-180" />}
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onRun}
+            disabled={!code.trim() || running || submitting}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.10] text-xs font-mono text-muted-foreground hover:text-foreground hover:border-white/20 transition-all disabled:opacity-40"
+          >
+            {running
+              ? <><RotateCcw size={11} className="animate-spin" /> Running...</>
+              : <><Play size={11} /> Run</>}
+          </button>
+          <button
+            onClick={onSubmit}
+            disabled={!code.trim() || submitting || running}
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono border transition-all disabled:opacity-40',
+              submitted
+                ? 'bg-neon-green/10 border-neon-green/30 text-neon-green'
+                : 'bg-neon-blue/10 border-neon-blue/30 text-neon-blue hover:bg-neon-blue/20'
+            )}
+          >
+            {submitted
+              ? <><CheckCircle2 size={11} /> Solved!</>
+              : submitting
+              ? <><RotateCcw size={11} className="animate-spin" /> Submitting...</>
+              : <><Zap size={11} /> Submit</>}
+          </button>
+        </div>
+      </div>
+
       {/* Test results */}
       <AnimatePresence>
         {testResults.length > 0 && showResults && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
             className="shrink-0 border-t border-white/[0.06] overflow-hidden"
           >
-            <div className="px-4 py-2.5">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <Play size={10} className="text-muted-foreground" />
-                  <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Results</span>
-                  <span className={cn('text-[10px] font-mono font-bold px-2 py-0.5 rounded-full', allPassed ? 'text-neon-green bg-neon-green/10' : 'text-red-400 bg-red-400/10')}>
-                    {passed}/{total} passed
-                  </span>
-                </div>
-                <button onClick={() => setShowResults(false)} className="text-muted-foreground/40 hover:text-muted-foreground">
-                  <ChevronDown size={12} />
-                </button>
-              </div>
+            <div className="px-4 py-2.5 space-y-2">
               <div className="flex gap-1.5 flex-wrap">
                 {testResults.map((r, i) => (
                   <div key={i} title={r.hidden ? `Hidden test ${i + 1}` : `Test ${i + 1}: ${r.input}`}
@@ -425,10 +463,27 @@ function EditorPanel({ problem, code, language, onCodeChange, onLanguageChange, 
                   >
                     {r.passed ? <CheckCircle2 size={9} /> : <XCircle size={9} />}
                     {r.hidden ? <Lock size={8} /> : null}
-                    {r.hidden ? `H${i - 1}` : `T${i + 1}`}
+                    {r.hidden ? `H${i + 1}` : `T${i + 1}`}
                   </div>
                 ))}
               </div>
+              {(() => {
+                const fail = testResults.find(r => !r.passed)
+                if (!fail) return null
+                return (
+                  <div className="rounded-lg bg-red-400/5 border border-red-400/15 p-2.5 space-y-1 text-[10px] font-mono">
+                    {fail.error ? (
+                      <div className="flex gap-1.5"><span className="text-red-400/60 shrink-0">Error:</span><span className="text-red-400">{fail.error}</span></div>
+                    ) : (
+                      <>
+                        {!fail.hidden && <div className="flex gap-1.5"><span className="text-muted-foreground/60 shrink-0">Input:</span><span className="text-foreground">{fail.input}</span></div>}
+                        <div className="flex gap-1.5"><span className="text-muted-foreground/60 shrink-0">Expected:</span><span className="text-neon-green">{fail.expected}</span></div>
+                        {fail.actual !== undefined && fail.actual !== '' && <div className="flex gap-1.5"><span className="text-muted-foreground/60 shrink-0">Got:</span><span className="text-red-400">{fail.actual}</span></div>}
+                      </>
+                    )}
+                  </div>
+                )
+              })()}
             </div>
           </motion.div>
         )}
@@ -438,7 +493,7 @@ function EditorPanel({ problem, code, language, onCodeChange, onLanguageChange, 
 }
 
 // ─── Main Export ──────────────────────────────────────────────────────────────
-export function CodeEditor({ problem, code, language, onCodeChange, onLanguageChange, submitted, testResults, viewMode = 'both' }: Props) {
+export function CodeEditor({ problem, code, language, onCodeChange, onLanguageChange, onRun, onSubmit, running, submitting, submitted, testResults, viewMode = 'both' }: Props) {
   const [tab, setTab] = useState<'problem' | 'editor'>(viewMode === 'editor' ? 'editor' : 'problem')
   useEffect(() => { if (problem) setTab(viewMode === 'editor' ? 'editor' : 'problem') }, [problem?._id, viewMode])
 
@@ -456,7 +511,7 @@ export function CodeEditor({ problem, code, language, onCodeChange, onLanguageCh
   }
 
   if (viewMode === 'problem') return <ProblemPanel problem={problem} testResults={testResults} submitted={submitted} />
-  if (viewMode === 'editor') return <EditorPanel problem={problem} code={code} language={language} onCodeChange={onCodeChange} onLanguageChange={onLanguageChange} submitted={submitted} testResults={testResults} />
+  if (viewMode === 'editor') return <EditorPanel problem={problem} code={code} language={language} onCodeChange={onCodeChange} onLanguageChange={onLanguageChange} onRun={onRun} onSubmit={onSubmit} running={running} submitting={submitting} submitted={submitted} testResults={testResults} />
 
   // 'both' — tab switcher
   return (
@@ -480,7 +535,7 @@ export function CodeEditor({ problem, code, language, onCodeChange, onLanguageCh
               <ProblemPanel problem={problem} testResults={testResults} submitted={submitted} />
             </motion.div>
           : <motion.div key="e" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 overflow-hidden">
-              <EditorPanel problem={problem} code={code} language={language} onCodeChange={onCodeChange} onLanguageChange={onLanguageChange} submitted={submitted} testResults={testResults} />
+              <EditorPanel problem={problem} code={code} language={language} onCodeChange={onCodeChange} onLanguageChange={onLanguageChange} onRun={onRun} onSubmit={onSubmit} running={running} submitting={submitting} submitted={submitted} testResults={testResults} />
             </motion.div>
         }
       </AnimatePresence>

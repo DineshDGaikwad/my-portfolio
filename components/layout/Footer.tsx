@@ -82,18 +82,6 @@ export function Footer() {
                   </a>
                 </li>
               ))}
-              <li>
-                <a
-                  href="/resume.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-neon-blue transition-colors group w-fit"
-                >
-                  <span className="text-neon-blue/30 group-hover:text-neon-blue transition-colors font-mono">›</span>
-                  Resume
-                  <ArrowUpRight size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                </a>
-              </li>
             </ul>
           </div>
 

@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { Flame, Trophy, Target, TrendingUp } from 'lucide-react'
+import { Flame, Trophy, Target, TrendingUp, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ProgressEntry } from './PracticePage'
 
@@ -106,7 +106,9 @@ export function StreakPanel({ userId, progress }: Props) {
 
         {/* Streak status */}
         <div className="shrink-0 flex flex-col items-center justify-center gap-1 text-center min-w-[80px]">
-          <span className="text-3xl">{current > 0 ? '🔥' : '💪'}</span>
+          <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center', current > 0 ? 'bg-orange-400/10 border border-orange-400/30' : 'bg-white/[0.04] border border-white/[0.08]')}>
+            {current > 0 ? <Flame size={16} className="text-orange-400" /> : <Zap size={16} className="text-muted-foreground/40" />}
+          </div>
           <p className="text-xs font-mono text-foreground font-semibold">
             {current > 0 ? `${current} day streak` : 'No streak yet'}
           </p>

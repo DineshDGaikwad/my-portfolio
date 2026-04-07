@@ -146,56 +146,30 @@ function Sidebar({ active, currentSlug }: { active: SectionId; currentSlug: stri
   return (
     <aside className="hidden lg:block w-44 shrink-0" aria-label="Section navigation">
       <div className="sticky top-28 space-y-0.5">
-
-        {/* Project list */}
-        <p className="text-2xs font-mono text-muted-foreground/50 uppercase tracking-widest mb-2 px-3">
-          Projects
-        </p>
+        <p className="text-2xs font-mono text-muted-foreground/50 uppercase tracking-widest mb-2 px-3">Projects</p>
         {projects.map((p) => (
-          <Link
-            key={p.slug}
-            href={`/projects/${p.slug}`}
+          <Link key={p.slug} href={`/projects/${p.slug}`}
             className={cn(
               'w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all text-left truncate block',
-              p.slug === currentSlug
-                ? 'text-neon-blue bg-neon-blue/10 font-medium'
-                : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+              p.slug === currentSlug ? 'text-neon-blue bg-neon-blue/10 font-medium' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
             )}
           >
-            <span
-              className="w-1.5 h-1.5 rounded-full shrink-0"
-              style={{ backgroundColor: p.source === 'internship' ? '#ff9900' : '#00d4ff' }}
-              aria-hidden="true"
-            />
+            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: p.source === 'internship' ? '#ff9900' : '#00d4ff' }} />
             <span className="truncate">{p.title}</span>
           </Link>
         ))}
-
-        {/* Divider */}
-        <div className="h-px bg-white/10 my-3 mx-3" aria-hidden="true" />
-
-        {/* Contents */}
-        <p className="text-2xs font-mono text-muted-foreground/50 uppercase tracking-widest mb-2 px-3">
-          Contents
-        </p>
-        {SECTIONS.map((s) => {
-          const isActive = active === s.id
-          return (
-            <button
-              key={s.id}
-              onClick={() => scrollTo(s.id)}
-              className={cn(
-                'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all text-left',
-                isActive
-                  ? 'text-neon-blue bg-neon-blue/10 font-medium'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-              )}
-            >
-              <s.icon size={12} aria-hidden="true" />
-              {s.label}
-            </button>
-          )
-        })}
+        <div className="h-px bg-white/10 my-3 mx-3" />
+        <p className="text-2xs font-mono text-muted-foreground/50 uppercase tracking-widest mb-2 px-3">Contents</p>
+        {SECTIONS.map((s) => (
+          <button key={s.id} onClick={() => scrollTo(s.id)}
+            className={cn(
+              'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all text-left',
+              active === s.id ? 'text-neon-blue bg-neon-blue/10 font-medium' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+            )}
+          >
+            <s.icon size={12} />{s.label}
+          </button>
+        ))}
       </div>
     </aside>
   )
@@ -285,7 +259,7 @@ export function CaseStudyClient({ project }: { project: Project }) {
               variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}
               className="flex flex-wrap items-center gap-3"
             >
-              {project.links.live && (
+              {project.links?.live && (
                 <Button href={project.links.live}>
                   <ExternalLink size={14} aria-hidden="true" /> Live Demo
                 </Button>
