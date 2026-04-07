@@ -3,7 +3,11 @@ import https from 'https'
 
 export const dynamic = 'force-dynamic'
 
+const ALLOWED_HOST = 'api.github.com'
+
 function httpsGet(url: string, headers: Record<string, string>): Promise<any> {
+  const parsed = new URL(url)
+  if (parsed.hostname !== ALLOWED_HOST) throw new Error('Disallowed host')
   return new Promise((resolve, reject) => {
     https.get(url, { headers }, (res) => {
       let data = ''

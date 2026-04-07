@@ -6,6 +6,10 @@ import * as dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
 
 const MONGODB_URI = process.env.MONGODB_URI!
+if (!MONGODB_URI) throw new Error('MONGODB_URI not set')
+
+const { protocol } = new URL(MONGODB_URI)
+if (protocol !== 'mongodb:' && protocol !== 'mongodb+srv:') throw new Error('Invalid MONGODB_URI protocol')
 
 // ─── Minimal inline schema (mirrors models/Project.ts) ───────────────────────
 const ProjectSchema = new mongoose.Schema({}, { strict: false, timestamps: true })
@@ -366,7 +370,7 @@ async function seed() {
 
   await ProjectModel.deleteOne({ slug: 'booknow' })
   await ProjectModel.create(bookNow)
-  console.log('✅ BookNow inserted')
+  console.log(`✅ BookNow inserted: ${bookNow.slug.replace(/[\r\n]/g, '')}`
 
   await mongoose.disconnect()
   console.log('✅ Done')

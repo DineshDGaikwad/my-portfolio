@@ -54,22 +54,30 @@ const ROLE_SKILLS: Record<string, string[]> = {
   ],
 }
 
+const ALLOWED_ROLES = new Set(Object.keys(ROLE_SKILLS))
+
+function sanitizeText(text: string): string {
+  return text.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, '').trim()
+}
+
 export async function analyzeResume(resumeText: string, role: string): Promise<AnalysisResult> {
   const apiKey = process.env.GROQ_API_KEY
   if (!apiKey) throw new Error('GROQ_API_KEY not configured')
 
-  const roleSkills = ROLE_SKILLS[role] ?? ROLE_SKILLS['SDE']
+  const safeRole = ALLOWED_ROLES.has(role) ? role : 'SDE'
+  const safeResume = sanitizeText(resumeText).slice(0, 7000)
+  const roleSkills = ROLE_SKILLS[safeRole]
 
   const prompt = `You are a world-class ATS resume expert, senior hiring manager, and career coach with 15+ years of experience reviewing thousands of resumes at top tech companies like Google, Microsoft, Amazon, and startups.
 
-Perform a DEEP, SPECIFIC, and ACTIONABLE analysis of this resume for a "${role}" position.
+Perform a DEEP, SPECIFIC, and ACTIONABLE analysis of this resume for a "${safeRole}" position.
 
 RESUME TEXT:
 ---
-${resumeText.slice(0, 7000)}
+${safeResume}
 ---
 
-REQUIRED SKILLS FOR ${role.toUpperCase()}:
+REQUIRED SKILLS FOR ${safeRole.toUpperCase()}:
 ${roleSkills.join(', ')}
 
 ANALYSIS INSTRUCTIONS:

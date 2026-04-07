@@ -4,6 +4,11 @@ const MONGODB_URI = process.env.MONGODB_URI!
 
 if (!MONGODB_URI) throw new Error('MONGODB_URI is not defined in .env.local')
 
+const { protocol } = new URL(MONGODB_URI)
+if (protocol !== 'mongodb:' && protocol !== 'mongodb+srv:') {
+  throw new Error('MONGODB_URI must use mongodb:// or mongodb+srv:// protocol')
+}
+
 const globalWithMongoose = global as typeof global & {
   mongoose: { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null }
 }

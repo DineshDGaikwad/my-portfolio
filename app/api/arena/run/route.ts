@@ -6,6 +6,14 @@ export const maxDuration = 10
 
 interface TestCase { input: string; expected: string }
 
+// Allowlist: test case inputs must only contain JSON-safe literals
+const SAFE_INPUT_RE = /^[\s\d\w"'\[\]{},.:\-+*/!?()\\ntrue false null undefined]+$/
+
+function isSafeInput(input: string): boolean {
+  if (input.length > 500) return false
+  return SAFE_INPUT_RE.test(input)
+}
+
 interface RunResult {
   index:    number
   input:    string
@@ -37,12 +45,14 @@ function runJS(code: string, testCases: TestCase[]): RunResult[] {
     const hidden = i >= 2
 
     try {
-      // Build a sandboxed context
+      if (!isSafeInput(tc.input)) {
+        results.push({ index: i, input: tc.input, expected: tc.expected, actual: '', passed: false, hidden, error: 'Invalid test input' })
+        continue
+      }
+
       const sandbox: Record<string, unknown> = { __result: undefined, console: { log: () => {} } }
       const ctx = vm.createContext(sandbox)
 
-      // Wrap user code + call with parsed input
-      // We eval the function definition then call it with the test input
       const fullCode = `
         ${code}
         

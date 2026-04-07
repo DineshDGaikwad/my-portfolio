@@ -7,6 +7,9 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 const MONGODB_URI = process.env.MONGODB_URI!
 if (!MONGODB_URI) throw new Error('MONGODB_URI not set')
 
+const { protocol } = new URL(MONGODB_URI)
+if (protocol !== 'mongodb:' && protocol !== 'mongodb+srv:') throw new Error('Invalid MONGODB_URI protocol')
+
 const ProblemSchema = new mongoose.Schema({
   slug: String, title: String, description: String,
   difficulty: String, tags: [String],
@@ -267,7 +270,7 @@ async function seed() {
   console.log('Connected to MongoDB')
   for (const p of problems) {
     await Problem.findOneAndUpdate({ slug: p.slug }, p, { upsert: true, returnDocument: 'after' })
-    console.log(`✓ ${p.title}`)
+    console.log(`✓ ${p.title.replace(/[\r\n]/g, '')}`)
   }
   console.log(`\nSeeded ${problems.length} problems with 6 languages each.`)
   await mongoose.disconnect()
